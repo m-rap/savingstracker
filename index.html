@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Savings Tracker</title>
+<style type="text/css" media="screen">
+    #editor1, #editor2 {
+        width: 1000px;
+        height: 400px;
+    }
+</style>
+</head>
+<body>
+
+<div id="editor1"></div>
+<input type="button" value="Process" onclick="process()" />
+<div id="editor2"></div>
+
+<script src="external/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor1 = ace.edit("editor1");
+    editor1.setTheme("ace/theme/monokai");
+    var editor2 = ace.edit("editor2");
+    editor2.setTheme("ace/theme/monokai");
+
+    function process() {
+        var txt1 = editor1.getValue();
+        var txt2s = txt1.split(/\r\n?|\n/);
+        var txt2s2 = [];
+        var txt2 = "";
+        for (var i in txt2s) {
+            txt2s[i] = txt2s[i].trim();
+            if (i > 0 && !txt2s[i].match(/^[0-9][0-9]\/[0-9][0-9]\/[0-9][0-9].*$/)) {
+                var tmp = txt2s[i].split("\t");
+                var append = txt2s[i].replace(tmp[tmp.length - 1], "").trim();
+                txt2s2[txt2s2.length - 1] += ((tmp.length > 2) ? "\t" : "\t\t") + append;
+            } else
+                txt2s2.push(txt2s[i]);
+        }
+        for (var i in txt2s2) {
+            txt2 += txt2s2[i] + "\n";
+        }
+        editor2.setValue(txt2);
+    }
+</script>
+</body>
+</html>
