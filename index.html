@@ -12,17 +12,52 @@
 <body>
 
 <div id="editor1"></div>
-<input type="button" value="Process" onclick="process()" />
+<select id="bank">
+    <option value="BRI">BRI</option>
+    <option value="BNI">BNI</option>
+</select><input type="button" value="Process" onclick="process()" />
 <div id="editor2"></div>
 
 <script src="external/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
+    var months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+    ];
+
+    function leftPad(number, targetLength) {
+        var output = number + '';
+        while (output.length < targetLength) {
+            output = '0' + output;
+        }
+        return output;
+    }
+
     var editor1 = ace.edit("editor1");
     editor1.setTheme("ace/theme/monokai");
     var editor2 = ace.edit("editor2");
     editor2.setTheme("ace/theme/monokai");
+    var select = document.getElementById("bank");
 
     function process() {
+        if (select.value == "BRI") {
+            processBRI();
+        } else if (select.value == "BNI") {
+            processBNI();
+        }
+    }
+
+    function processBRI() {
         var txt1 = editor1.getValue();
         var txt2s = txt1.split(/\r\n?|\n/);
         var txt2s2 = [];
@@ -37,6 +72,29 @@
                 txt2s2.push(txt2s[i]);
         }
         for (var i in txt2s2) {
+            txt2 += txt2s2[i] + "\n";
+        }
+        editor2.setValue(txt2);
+    }
+
+    function processBNI() {
+        var txt1 = editor1.getValue();
+        var txt2s = txt1.split(/\r\n?|\n/);
+        var txt2s2 = [];
+        var txt2 = "";
+        for (var i in txt2s) {
+            txt2s[i] = txt2s[i].trim();
+            if (i > 0 && !txt2s[i].match(/^[0-9][0-9]\-[A-Z][A-Za-z][A-Za-z]\-[0-9][0-9][0-9][0-9].*$/)) {
+                var tmp = txt2s[i].split("\t");
+                tmp[1] = tmp[1].replace(',', ';').replace('.', ',').replace(';', '.');
+                txt2s2[txt2s2.length - 1] += ((tmp[0] == 'Db.') ? "\t" : "\t\t") + tmp[1];
+            } else {
+                var mon = txt2s[i].substring(0, 11);
+                var dateStr = mon.split('-');
+                txt2s2.push(dateStr[0] + '/' + leftPad(months.indexOf(dateStr[1]) + 1, 2) + '/' + dateStr[2] + txt2s[i].substring(11));
+            }
+        }
+        for (var i = txt2s2.length - 1; i >= 0; i--) {
             txt2 += txt2s2[i] + "\n";
         }
         editor2.setValue(txt2);
