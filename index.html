@@ -86,11 +86,10 @@
             txt2s[i] = txt2s[i].trim();
             if (i > 0 && !txt2s[i].match(/^[0-9][0-9]\-[A-Z][A-Za-z][A-Za-z]\-[0-9][0-9][0-9][0-9].*$/)) {
                 var tmp = txt2s[i].split("\t");
-                console.log(tmp);
-                if (tmp.length > 1)
-                    tmp[1] = tmp[1].replace(',', ';').replace('.', ',').replace(';', '.');
-                if (tmp.length > 0)
+                if (tmp.length > 1) {
+                    tmp[1] = tmp[1].replace(/,/g, ';').replace(/\./g, ',').replace(/;/g, '.');
                     txt2s2[txt2s2.length - 1] += ((tmp[0] == 'Db.') ? "\t" : "\t\t") + tmp[1];
+                }
             } else {
                 var mon = txt2s[i].substring(0, 11);
                 var dateStr = mon.split('-');
