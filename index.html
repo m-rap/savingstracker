@@ -15,7 +15,10 @@
 <select id="bank">
     <option value="BRI">BRI</option>
     <option value="BNI">BNI</option>
-</select><input type="button" value="Process" onclick="process()" />
+    <option value="BCA">BCA</option>
+</select>
+<input type="button" value="Process" onclick="process()" />
+Tahun: <input id="tahun" type="text" />
 <div id="editor2"></div>
 
 <script src="external/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -48,12 +51,15 @@
     var editor2 = ace.edit("editor2");
     editor2.setTheme("ace/theme/monokai");
     var select = document.getElementById("bank");
+    var txtTahun = document.getElementById("tahun");
 
     function process() {
         if (select.value == "BRI") {
             processBRI();
         } else if (select.value == "BNI") {
             processBNI();
+        } else if (select.value == "BCA") {
+            processBCA();
         }
     }
 
@@ -99,6 +105,81 @@
         for (var i = txt2s2.length - 1; i >= 0; i--) {
             txt2 += txt2s2[i] + "\n";
         }
+        editor2.setValue(txt2);
+    }
+
+    function processBCA() {
+        var txt1 = editor1.getValue();
+        var txt2s = txt1.split(/\r\n?|\n/);
+        var dataRows = [];
+        var tahun = txtTahun.value;
+        var txt2 = "";
+
+        for (var i in txt2s) {
+            txt2s[i] = txt2s[i].trim();
+            if (i == txt2s.length - 1) {
+                if (txt2s[i].length == 0) {
+                    break;
+                }
+            }
+            if (txt2s[i].match(/^[0-9][0-9]\/[0-9][0-9]$/)) {
+                var tgls = txt2s[i].split("/");
+                dataRows.push({tgl: tgls[0] + "/" + tgls[1] + "/" + tahun});
+            } else if (txt2s[i] == "PEND") {
+                dataRows.push({tgl: "PEND"});
+            } else {
+                var lines;
+                if (typeof dataRows[dataRows.length - 1].lines != "undefined") {
+                    lines = dataRows[dataRows.length - 1].lines;
+                } else {
+                    lines = [];
+                }
+                lines.push(txt2s[i]);
+                dataRows[dataRows.length - 1].lines = lines;
+            }
+        }
+
+        for (var i in dataRows) {
+            var dataRow = dataRows[i];
+            var lines = dataRow.lines;
+            txt2 += dataRows[i].tgl + "\t";
+            if (typeof lines != "undefined") {
+                var attrs = ["", "", "", "", ""]; // ket,cab,nilai,tipe,saldo
+                var idxAttr = 4;
+                var j;
+                for (j = lines.length - 1; j >= 0 && idxAttr >= 1; j--, idxAttr--) {
+                    attrs[idxAttr] = lines[j];
+                }
+                var lastJ = j;
+                for (j = 0; j <= lastJ; j++) {
+                    if (j < lastJ) {
+                        attrs[0] += lines[j] + "\n";
+                    } else {
+                        attrs[0] += lines[j];
+                    }
+                }
+                for (j = 0; j < 4; j++) {
+                    if (j < 3) {
+                        if (j == 0) {
+                            txt2 += "\"" + attrs[j] + "\"\t";
+                        } else if (j == 1) {
+                            txt2 += "'" + attrs[j] + "\t";
+                        } else if (j == 2) {
+                            var val = attrs[j].replaceAll(".", ";");
+                            val = val.replaceAll(",", ".");
+                            val = val.replaceAll(";", ",");
+                            txt2 += val + "\t";
+                        } else {
+                            txt2 += attrs[j] + "\t";
+                        }
+                    } else {
+                        txt2 += attrs[j];
+                    }
+                }
+            }
+            txt2 += "\n";
+        }
+
         editor2.setValue(txt2);
     }
 </script>
