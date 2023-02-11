@@ -114,6 +114,7 @@ Tahun: <input id="tahun" type="text" />
         var dataRows = [];
         var tahun = txtTahun.value;
         var txt2 = "";
+        var txt2Conv = "";
 
         for (var i in txt2s) {
             txt2s[i] = txt2s[i].trim();
@@ -143,9 +144,12 @@ Tahun: <input id="tahun" type="text" />
             var dataRow = dataRows[i];
             var lines = dataRow.lines;
             txt2 += dataRows[i].tgl + "\t";
+            txt2Conv += dataRows[i].tgl + "\t";
             if (typeof lines != "undefined") {
                 var attrs = ["", "", "", "", ""]; // ket,cab,nilai,tipe,saldo
+                var attrsConv = ["", "", "", "", ""]; // ket,cab,debet,kredit,saldo
                 var idxAttr = 4;
+                var idxAttrConv = 4;
                 var j;
                 for (j = lines.length - 1; j >= 0 && idxAttr >= 1; j--, idxAttr--) {
                     attrs[idxAttr] = lines[j];
@@ -156,6 +160,22 @@ Tahun: <input id="tahun" type="text" />
                         attrs[0] += lines[j] + "\n";
                     } else {
                         attrs[0] += lines[j];
+                    }
+                }
+                idxAttr = 4;
+                idxAttrConv = 4;
+                for (; idxAttr >= 0 && idxAttrConv >= 0; idxAttr--, idxAttrConv--) {
+                    if (idxAttr == 3) {
+                        if (attrs[idxAttr] == "CR") {
+                            attrsConv[idxAttrConv] = attrs[idxAttr-1];
+                            idxAttrConv--;
+                        } else {
+                            idxAttrConv--;
+                            attrsConv[idxAttrConv] = attrs[idxAttr-1];
+                        }
+                        idxAttr--;
+                    } else {
+                        attrsConv[idxAttrConv] = attrs[idxAttr];
                     }
                 }
                 for (j = 0; j < 4; j++) {
@@ -176,11 +196,29 @@ Tahun: <input id="tahun" type="text" />
                         txt2 += attrs[j];
                     }
                 }
+                for (j = 0; j < 4; j++) {
+                    if (j == 0) {
+                        txt2Conv += "\"" + attrsConv[j] + "\"\t";
+                    } else if (j == 1) {
+                        continue;
+                    } else if (j == 2 || j == 3) {
+                        var val = attrsConv[j].replaceAll(".", ";");
+                        val = val.replaceAll(",", ".");
+                        val = val.replaceAll(";", ",");
+                        txt2Conv += val + "\t";
+                    } else {
+                        txt2Conv += attrsConv[j] + "\t";
+                        // txt2Conv += attrsConv[j];
+                    }
+                }
+                txt2Conv += "'" + attrsConv[1];
             }
             txt2 += "\n";
+            txt2Conv += "\n";
         }
 
-        editor2.setValue(txt2);
+        //editor2.setValue(txt2);
+        editor2.setValue(txt2Conv)
     }
 </script>
 </body>
